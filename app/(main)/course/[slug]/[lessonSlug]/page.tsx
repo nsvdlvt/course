@@ -3,6 +3,7 @@ import {
   BookOpen,
   Download,
   FileText,
+  PlayCircle,
 } from "lucide-react";
 
 interface PageProps {
@@ -11,6 +12,18 @@ interface PageProps {
     lessonSlug: string;
   }>;
 }
+
+type LessonDocument = {
+  id: string;
+  title: string;
+  file_url: string;
+  file_name: string | null;
+};
+
+type LessonDocumentLink = {
+  document_id: string;
+  documents: LessonDocument | null;
+};
 
 function getYoutubeEmbed(
   url: string
@@ -26,6 +39,29 @@ function getYoutubeEmbed(
       "youtu.be"
     ) {
       return `https://www.youtube.com/embed${parsed.pathname}`;
+    }
+
+    if (
+      parsed.pathname.startsWith(
+        "/embed/"
+      )
+    ) {
+      return `https://www.youtube.com${parsed.pathname}`;
+    }
+
+    if (
+      parsed.pathname.startsWith(
+        "/shorts/"
+      )
+    ) {
+      const videoId =
+        parsed.pathname.split(
+          "/"
+        )[2];
+
+      return videoId
+        ? `https://www.youtube.com/embed/${videoId}`
+        : "";
     }
 
     const videoId =
@@ -79,10 +115,19 @@ export default async function LessonPage({
     );
 
   const documents =
-    lessonDocuments?.map(
-      (item: any) =>
-        item.documents
-    ) || [];
+    (
+      (lessonDocuments ||
+        []) as LessonDocumentLink[]
+    )
+      .map(
+        (item) => item.documents
+      )
+      .filter(
+        (
+          document
+        ): document is LessonDocument =>
+          Boolean(document)
+      );
 
   const embedUrl =
     getYoutubeEmbed(
@@ -104,16 +149,34 @@ export default async function LessonPage({
       >
         {lesson.title}
       </h1>
-      <div className="overflow-hidden rounded-3xl shadow-lg mb-8">
-  <iframe
-    width="100%"
-    height="800"
-    src={lesson.video_url ? embedUrl : "https://www.youtube.com/embed/dQw4w9WgXcQ"}
-    title="YouTube video player"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowFullScreen
-  />
-</div>
+
+      <div className="mb-8 overflow-hidden rounded-3xl bg-slate-950 shadow-lg">
+        {embedUrl ? (
+          <div className="aspect-video w-full">
+            <iframe
+              src={embedUrl}
+              title={lesson.title}
+              className="h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+        ) : (
+          <div className="flex aspect-video w-full min-h-[220px] flex-col items-center justify-center px-6 text-center text-white">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10">
+              <PlayCircle
+                size={34}
+                className="text-white"
+              />
+            </div>
+
+            <h2 className="text-xl font-bold sm:text-2xl">
+              Video đang được cập nhật
+            </h2>
+          </div>
+        )}
+      </div>
+
       {/* DOCUMENTS */}
       <section
         className="
@@ -154,7 +217,7 @@ export default async function LessonPage({
         ) : (
           <div className="space-y-4">
             {documents.map(
-              (doc: any) => (
+              (doc) => (
                 <a
                   key={doc.id}
                   href={

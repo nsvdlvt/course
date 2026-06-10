@@ -2,20 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
-  LayoutDashboard,
   BookOpen,
   FileText,
   BookText,
+  Home,
+  Menu,
+  X,
+  type LucideIcon,
 } from "lucide-react";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItem = (
     href: string,
     label: string,
-    Icon: any
+    Icon: LucideIcon
   ) => {
     let active = false;
 
@@ -33,6 +38,7 @@ export default function Navbar() {
     return (
       <Link
         href={href}
+        onClick={() => setIsMenuOpen(false)}
         className={`
           flex
           items-center
@@ -56,6 +62,28 @@ export default function Navbar() {
     );
   };
 
+  const navItems = (
+    <>
+      {navItem(
+        "/",
+        "Trang chủ",
+        Home
+      )}
+
+      {navItem(
+        "/course",
+        "Khóa học",
+        BookOpen
+      )}
+
+      {navItem(
+        "/documents",
+        "Tài liệu",
+        FileText
+      )}
+    </>
+  );
+
   return (
     <header
       className="
@@ -68,7 +96,7 @@ export default function Navbar() {
         backdrop-blur-xl
       "
     >
-      <div className="max-w-7xl mx-auto h-16 px-6 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto h-16 px-4 sm:px-6 flex items-center justify-between">
         {/* Logo */}
         <Link
           href="/home"
@@ -107,27 +135,41 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Menu */}
-        <nav className="flex items-center gap-2">
-          {navItem(
-            "/",
-            "Trang chủ",
-            LayoutDashboard
-          )}
-
-          {navItem(
-            "/course",
-            "Khóa học",
-            BookOpen
-          )}
-
-          {navItem(
-            "/documents",
-            "Tài liệu",
-            FileText
-          )}
+        {/* Desktop menu */}
+        <nav className="navbar-desktop-menu items-center gap-2">
+          {navItems}
         </nav>
+
+        <button
+          type="button"
+          aria-label={isMenuOpen ? "Đóng menu" : "Mở menu"}
+          aria-expanded={isMenuOpen}
+          onClick={() => setIsMenuOpen((current) => !current)}
+          className="
+            navbar-menu-button
+            h-10
+            w-10
+            items-center
+            justify-center
+            rounded-xl
+            text-slate-700
+            transition-all
+            duration-200
+            hover:bg-blue-50
+            hover:text-blue-600
+          "
+        >
+          {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
       </div>
+
+      {isMenuOpen && (
+        <nav className="navbar-mobile-menu border-t border-slate-200/70 bg-white/95 px-4 py-3 shadow-sm">
+          <div className="mx-auto flex max-w-7xl flex-col gap-2">
+            {navItems}
+          </div>
+        </nav>
+      )}
     </header>
   );
 }
