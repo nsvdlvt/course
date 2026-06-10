@@ -22,7 +22,10 @@ type LessonDocument = {
 
 type LessonDocumentLink = {
   document_id: string;
-  documents: LessonDocument | null;
+  documents:
+    | LessonDocument
+    | LessonDocument[]
+    | null;
 };
 
 function getYoutubeEmbed(
@@ -114,20 +117,21 @@ export default async function LessonPage({
       lesson.id
     );
 
-  const documents =
-    (
-      (lessonDocuments ||
-        []) as LessonDocumentLink[]
-    )
-      .map(
-        (item) => item.documents
+const documents =
+  (
+    (lessonDocuments ||
+      []) as LessonDocumentLink[]
+  )
+    .flatMap((item) => {
+      if (!item.documents)
+        return [];
+
+      return Array.isArray(
+        item.documents
       )
-      .filter(
-        (
-          document
-        ): document is LessonDocument =>
-          Boolean(document)
-      );
+        ? item.documents
+        : [item.documents];
+    });
 
   const embedUrl =
     getYoutubeEmbed(
