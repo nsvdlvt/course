@@ -27,7 +27,24 @@ type LessonDocumentLink = {
     | LessonDocument[]
     | null;
 };
+function getDownloadUrl(
+  fileUrl: string,
+  fileName?: string | null,
+  title?: string
+) {
+  try {
+    const url = new URL(fileUrl);
 
+    url.searchParams.set(
+      "download",
+      fileName || title || "file"
+    );
+
+    return url.toString();
+  } catch {
+    return fileUrl;
+  }
+}
 function getYoutubeEmbed(
   url: string
 ) {
@@ -220,85 +237,60 @@ const documents =
           </div>
         ) : (
           <div className="space-y-4">
-            {documents.map(
-              (doc) => (
-                <a
-                  key={doc.id}
-                  href={
-                    doc.file_url
-                  }
-                  target="_blank"
-                  rel="noreferrer"
-                  className="
-                    flex
-                    items-center
-                    justify-between
+  {documents.map((doc) => (
+    <div
+      key={doc.id}
+      className="
+        flex
+        items-center
+        justify-between
+        rounded-2xl
+        border
+        border-slate-200
+        p-5
+        hover:bg-slate-50
+        transition
+      "
+    >
+      <a
+        href={`/documents/${doc.id}`}
+        className="flex items-center gap-4 flex-1"
+      >
+        <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center">
+          <FileText
+            size={22}
+            className="text-blue-600"
+          />
+        </div>
 
-                    rounded-2xl
-                    border
-                    border-slate-200
-
-                    p-5
-
-                    hover:bg-slate-50
-                    transition
-                  "
-                >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className="
-                        h-12
-                        w-12
-
-                        rounded-xl
-
-                        bg-blue-100
-
-                        flex
-                        items-center
-                        justify-center
-                      "
-                    >
-                      <FileText
-                        size={22}
-                        className="
-                          text-blue-600
-                        "
-                      />
-                    </div>
-
-                    <div>
-                      <div
-                        className="
-                          font-semibold
-                          text-lg
-                        "
-                      >
-                        {doc.title}
-                      </div>
-
-                      <div
-                        className="
-                          text-slate-500
-                        "
-                      >
-                        {
-                          doc.file_name
-                        }
-                      </div>
-                    </div>
-                  </div>
-
-                  <Download
-                    size={22}
-                    className="
-                      text-slate-400
-                    "
-                  />
-                </a>
-              )
-            )}
+        <div>
+          <div className="font-semibold text-lg">
+            {doc.title}
           </div>
+
+          <div className="text-slate-500">
+            {doc.file_name}
+          </div>
+        </div>
+      </a>
+
+      <a
+  href={getDownloadUrl(
+    doc.file_url,
+    doc.file_name,
+    doc.title
+  )}
+  download
+  className="ml-4"
+>
+  <Download
+    size={22}
+    className="text-slate-400"
+  />
+</a>
+    </div>
+  ))}
+</div>
         )}
       </section>
     </main>

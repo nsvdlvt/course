@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import BackButton from "@/components/BackButton";
 import {
   ArrowLeft,
   Download,
@@ -205,13 +205,7 @@ export default async function DocumentDetailPage({
   return (
     <main className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-fuchsia-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <Link
-          href="/documents"
-          className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-600 transition hover:text-blue-600"
-        >
-          <ArrowLeft size={17} />
-          Quay lại tài liệu
-        </Link>
+        <BackButton />
 
         <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">

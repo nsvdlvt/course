@@ -65,7 +65,7 @@ export default function Navbar() {
   const navItems = (
     <>
       {navItem(
-        "/",
+        "/home",
         "Trang chủ",
         Home
       )}
