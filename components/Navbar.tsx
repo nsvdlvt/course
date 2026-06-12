@@ -10,6 +10,7 @@ import {
   Home,
   Menu,
   X,
+  BookA,
   type LucideIcon,
 } from "lucide-react";
 
@@ -17,23 +18,20 @@ export default function Navbar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const isActivePath = (href: string) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
+
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
   const navItem = (
     href: string,
     label: string,
     Icon: LucideIcon
   ) => {
-    let active = false;
-
-    if (href === "/") {
-      active = pathname === "/";
-    } else if (href === "/home") {
-      active =
-        pathname.startsWith("/home") ||
-        pathname.startsWith("/course") ||
-        pathname.startsWith("/dashboard/course");
-    } else {
-      active = pathname.startsWith(href);
-    }
+    const active = isActivePath(href);
 
     return (
       <Link
@@ -80,6 +78,12 @@ export default function Navbar() {
         "/documents",
         "Tài liệu",
         FileText
+      )}
+
+      {navItem(
+        "https://vocab.nsvd.io.vn",
+        "Học từ vựng",
+        BookA
       )}
     </>
   );

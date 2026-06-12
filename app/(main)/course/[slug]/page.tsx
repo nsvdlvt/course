@@ -219,15 +219,6 @@ export default async function CoursePage({
                           </span>
                         </div>
 
-                        <div
-                          className="
-                            text-sm
-                            text-slate-500
-                          "
-                        >
-                          {lesson.duration ||
-                            ""}
-                        </div>
                       </Link>
                     )
                   )}

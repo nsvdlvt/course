@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import DocumentEditor from "@/components/admin/DocumentEditor";
 
 export default async function DocumentPage({
   params,
@@ -13,25 +14,19 @@ export default async function DocumentPage({
     .eq("id", id)
     .single();
 
+  const { data: folders } = await supabase
+    .from("folders")
+    .select("*")
+    .order("name");
+
   if (!document) {
     return <div>Không tìm thấy</div>;
   }
 
   return (
-    <div className="max-w-4xl">
-      <h1 className="text-4xl font-black mb-8">
-        {document.title}
-      </h1>
-
-      <div className="bg-white p-8 rounded-3xl shadow">
-        <a
-          href={document.file_url}
-          target="_blank"
-          className="text-blue-600"
-        >
-          Mở tài liệu
-        </a>
-      </div>
-    </div>
+    <DocumentEditor
+      document={document}
+      folders={folders || []}
+    />
   );
 }

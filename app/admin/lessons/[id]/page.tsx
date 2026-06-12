@@ -41,12 +41,19 @@ export default async function LessonPage({
       .select("*")
       .eq("lesson_id", lesson.id);
 
+  const { data: sections } = await supabase
+    .from("lesson_sections")
+    .select("*")
+    .eq("lesson_id", lesson.id)
+    .order("position");
+
   return (
     <LessonEditor
       lesson={lesson}
       documents={documents || []}
       folders={folders || []}
       linkedDocuments={linkedDocuments || []}
+      sections={sections || []}
     />
   );
 }

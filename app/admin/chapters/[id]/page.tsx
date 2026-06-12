@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Layers3, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export default async function ChapterPage({
@@ -20,6 +20,19 @@ export default async function ChapterPage({
     .select("*")
     .eq("chapter_id", id)
     .order("position");
+
+  const lessonIds = (lessons || []).map((lesson) => lesson.id);
+  const { data: sections } = lessonIds.length
+    ? await supabase.from("lesson_sections").select("*").in("lesson_id", lessonIds)
+    : { data: [] };
+
+  const sectionCountByLesson = (sections || []).reduce(
+    (acc: Record<string, number>, section: any) => {
+      acc[section.lesson_id] = (acc[section.lesson_id] || 0) + 1;
+      return acc;
+    },
+    {}
+  );
 
   return (
     <div>
@@ -50,16 +63,25 @@ export default async function ChapterPage({
 
       <div className="space-y-3">
         {(lessons || []).map((lesson) => (
-          <div
-            key={lesson.id}
-            className="
-              bg-white
-              rounded-2xl
-              p-5
-              shadow
-            "
-          >
-            {lesson.title}
+          <div key={lesson.id} className="rounded-2xl bg-white p-5 shadow">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="font-semibold">{lesson.title}</div>
+                <div className="mt-1 text-sm text-slate-500">{lesson.slug}</div>
+              </div>
+
+              <Link
+                href={`/admin/lessons/${lesson.id}`}
+                className="text-sm text-blue-600"
+              >
+                Chinh sua
+              </Link>
+            </div>
+
+            <div className="mt-4 inline-flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 text-sm">
+              <Layers3 size={16} />
+              {sectionCountByLesson[lesson.id] || 0} tiet hoc
+            </div>
           </div>
         ))}
       </div>

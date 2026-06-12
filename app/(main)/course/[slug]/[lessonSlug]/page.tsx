@@ -1,10 +1,5 @@
 import { supabase } from "@/lib/supabase";
-import {
-  BookOpen,
-  Download,
-  FileText,
-  PlayCircle,
-} from "lucide-react";
+import LessonPlayer from "@/components/LessonPlayer";
 
 interface PageProps {
   params: Promise<{
@@ -22,277 +17,59 @@ type LessonDocument = {
 
 type LessonDocumentLink = {
   document_id: string;
-  documents:
-    | LessonDocument
-    | LessonDocument[]
-    | null;
+  documents: LessonDocument | LessonDocument[] | null;
 };
-function getDownloadUrl(
-  fileUrl: string,
-  fileName?: string | null,
-  title?: string
-) {
-  try {
-    const url = new URL(fileUrl);
 
-    url.searchParams.set(
-      "download",
-      fileName || title || "file"
-    );
+type LessonSection = {
+  id: string;
+  title: string;
+  video_url: string | null;
+  position: number;
+};
 
-    return url.toString();
-  } catch {
-    return fileUrl;
-  }
-}
-function getYoutubeEmbed(
-  url: string
-) {
-  if (!url) return "";
+export default async function LessonPage({ params }: PageProps) {
+  const { lessonSlug } = await params;
 
-  try {
-    const parsed =
-      new URL(url);
-
-    if (
-      parsed.hostname ===
-      "youtu.be"
-    ) {
-      return `https://www.youtube.com/embed${parsed.pathname}`;
-    }
-
-    if (
-      parsed.pathname.startsWith(
-        "/embed/"
-      )
-    ) {
-      return `https://www.youtube.com${parsed.pathname}`;
-    }
-
-    if (
-      parsed.pathname.startsWith(
-        "/shorts/"
-      )
-    ) {
-      const videoId =
-        parsed.pathname.split(
-          "/"
-        )[2];
-
-      return videoId
-        ? `https://www.youtube.com/embed/${videoId}`
-        : "";
-    }
-
-    const videoId =
-      parsed.searchParams.get(
-        "v"
-      );
-
-    if (videoId) {
-      return `https://www.youtube.com/embed/${videoId}`;
-    }
-
-    return "";
-  } catch {
-    return "";
-  }
-}
-
-export default async function LessonPage({
-  params,
-}: PageProps) {
-  const {
-    lessonSlug,
-  } = await params;
-
-  const { data: lesson } =
-    await supabase
-      .from("lessons")
-      .select("*")
-      .eq("slug", lessonSlug)
-      .single();
+  const { data: lesson } = await supabase
+    .from("lessons")
+    .select("*")
+    .eq("slug", lessonSlug)
+    .single();
 
   if (!lesson) {
-    return (
-      <div className="p-10">
-        Không tìm thấy bài học
-      </div>
-    );
+    return <div className="p-10">Khong tim thay bai hoc</div>;
   }
 
-  const {
-    data: lessonDocuments,
-  } = await supabase
+  const { data: lessonDocuments } = await supabase
     .from("lesson_documents")
     .select(`
       document_id,
       documents(*)
     `)
-    .eq(
-      "lesson_id",
-      lesson.id
-    );
+    .eq("lesson_id", lesson.id);
 
-const documents =
-  (
-    (lessonDocuments ||
-      []) as LessonDocumentLink[]
-  )
-    .flatMap((item) => {
-      if (!item.documents)
-        return [];
+  const { data: sections } = await supabase
+    .from("lesson_sections")
+    .select("*")
+    .eq("lesson_id", lesson.id)
+    .order("position");
 
-      return Array.isArray(
-        item.documents
-      )
-        ? item.documents
-        : [item.documents];
-    });
-
-  const embedUrl =
-    getYoutubeEmbed(
-      lesson.video_url || ""
-    );
+  const documents = ((lessonDocuments || []) as LessonDocumentLink[]).flatMap((item) => {
+    if (!item.documents) return [];
+    return Array.isArray(item.documents) ? item.documents : [item.documents];
+  });
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-8">
-      {/* TITLE */}
-      <h1
-        className="
-          text-4xl
-          md:text-5xl
-          mt-8
-          font-black
-          text-slate-800
-          mb-8
-        "
-      >
+    <main className="mx-auto max-w-7xl px-6 py-8">
+      <h1 className="mb-6 mt-4 text-4xl font-black text-slate-800 md:text-5xl">
         {lesson.title}
       </h1>
 
-      <div className="mb-8 overflow-hidden rounded-3xl bg-slate-950 shadow-lg">
-        {embedUrl ? (
-          <div className="aspect-video w-full">
-            <iframe
-              src={embedUrl}
-              title={lesson.title}
-              className="h-full w-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-            />
-          </div>
-        ) : (
-          <div className="flex aspect-video w-full min-h-[220px] flex-col items-center justify-center px-6 text-center text-white">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10">
-              <PlayCircle
-                size={34}
-                className="text-white"
-              />
-            </div>
-
-            <h2 className="text-xl font-bold sm:text-2xl">
-              Video đang được cập nhật
-            </h2>
-          </div>
-        )}
-      </div>
-
-      {/* DOCUMENTS */}
-      <section
-        className="
-          bg-white
-          rounded-3xl
-          border
-          border-slate-200
-          shadow-sm
-          p-6
-        "
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <BookOpen
-            size={28}
-          />
-
-          <h2
-            className="
-              text-3xl
-              font-bold
-            "
-          >
-            Tài liệu bài học
-          </h2>
-        </div>
-
-        {documents.length ===
-        0 ? (
-          <div
-            className="
-              py-12
-              text-center
-              text-slate-500
-            "
-          >
-            Chưa có tài liệu
-          </div>
-        ) : (
-          <div className="space-y-4">
-  {documents.map((doc) => (
-    <div
-      key={doc.id}
-      className="
-        flex
-        items-center
-        justify-between
-        rounded-2xl
-        border
-        border-slate-200
-        p-5
-        hover:bg-slate-50
-        transition
-      "
-    >
-      <a
-        href={`/documents/${doc.id}`}
-        className="flex items-center gap-4 flex-1"
-      >
-        <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center">
-          <FileText
-            size={22}
-            className="text-blue-600"
-          />
-        </div>
-
-        <div>
-          <div className="font-semibold text-lg">
-            {doc.title}
-          </div>
-
-          <div className="text-slate-500">
-            {doc.file_name}
-          </div>
-        </div>
-      </a>
-
-      <a
-  href={getDownloadUrl(
-    doc.file_url,
-    doc.file_name,
-    doc.title
-  )}
-  download
-  className="ml-4"
->
-  <Download
-    size={22}
-    className="text-slate-400"
-  />
-</a>
-    </div>
-  ))}
-</div>
-        )}
-      </section>
+      <LessonPlayer
+        lesson={lesson}
+        sections={(sections || []) as LessonSection[]}
+        documents={documents}
+      />
     </main>
   );
 }
