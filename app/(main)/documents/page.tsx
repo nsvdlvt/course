@@ -48,18 +48,7 @@ function getFileLabel(document: DocumentItem) {
 }
 
 function getDownloadUrl(document: DocumentItem) {
-  try {
-    const url = new URL(document.file_url);
-
-    url.searchParams.set(
-      "download",
-      document.file_name || document.title
-    );
-
-    return url.toString();
-  } catch {
-    return document.file_url;
-  }
+  return `/api/documents/${document.id}/download`;
 }
 
 function getSearchValue(value: string | string[] | undefined) {

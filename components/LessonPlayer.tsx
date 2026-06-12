@@ -226,7 +226,7 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
         </div>
       </div>
 
-      <section className="mt-8 max-w-[1108px] rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="mt-8 max-w-[1108px] overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="mb-6 flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100">
             <BookOpen size={24} />
@@ -244,10 +244,10 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
             {documents.map((doc) => (
               <div
                 key={doc.id}
-                className="flex items-center justify-between rounded-2xl border border-slate-200 p-5 transition hover:bg-slate-50"
+                className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 p-5 transition hover:bg-slate-50"
               >
-                <a href={`/documents/${doc.id}`} className="flex flex-1 items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100">
+                <a href={`/documents/${doc.id}`} className="flex min-w-0 w-full items-center gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-100">
                     <FileText size={22} className="text-blue-600" />
                   </div>
                   <div className="min-w-0">

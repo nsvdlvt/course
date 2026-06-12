@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import {
-  ArrowLeft,
   Download,
   ExternalLink,
   FileText,
@@ -65,18 +64,7 @@ function getPreviewType(document: DocumentItem) {
 }
 
 function getDownloadUrl(document: DocumentItem) {
-  try {
-    const url = new URL(document.file_url);
-
-    url.searchParams.set(
-      "download",
-      document.file_name || document.title
-    );
-
-    return url.toString();
-  } catch {
-    return document.file_url;
-  }
+  return `/api/documents/${document.id}/download`;
 }
 
 function FilePreview({
@@ -88,11 +76,22 @@ function FilePreview({
 
   if (previewType === "pdf") {
     return (
-      <iframe
-        src={document.file_url}
-        title={document.title}
-        className="h-[75vh] min-h-[520px] w-full rounded-2xl border border-slate-200 bg-white"
-      />
+      <>
+        <div className="md:hidden">
+          <PreviewFallback
+            document={document}
+            title="Mở PDF để xem đầy đủ"
+            description="iPhone thường không cuộn ổn định PDF khi nhúng trực tiếp trong trang. Mở file riêng sẽ xem và lướt được toàn bộ tài liệu."
+            openLabel="Xem PDF"
+          />
+        </div>
+
+        <iframe
+          src={document.file_url}
+          title={document.title}
+          className="hidden h-[75vh] min-h-[520px] w-full rounded-2xl border border-slate-200 bg-white md:block"
+        />
+      </>
     );
   }
 
@@ -143,8 +142,14 @@ function FilePreview({
 
 function PreviewFallback({
   document,
+  title = "Không thể preview trực tiếp file này",
+  description = "Một số định dạng như DOCX, PPTX hoặc file nén cần tải về hoặc mở ở tab mới để xem đầy đủ.",
+  openLabel = "Mở file",
 }: {
   document: DocumentItem;
+  title?: string;
+  description?: string;
+  openLabel?: string;
 }) {
   return (
     <div className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
@@ -153,12 +158,11 @@ function PreviewFallback({
       </div>
 
       <h2 className="text-xl font-bold text-slate-900">
-        Không thể preview trực tiếp file này
+        {title}
       </h2>
 
       <p className="mt-2 max-w-lg text-slate-500">
-        Một số định dạng như DOCX, PPTX hoặc file nén cần tải về hoặc mở ở tab
-        mới để xem đầy đủ.
+        {description}
       </p>
 
       <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -169,7 +173,7 @@ function PreviewFallback({
           className="flex items-center gap-2 rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
         >
           <ExternalLink size={18} />
-          Mở file
+          {openLabel}
         </a>
 
         <a
