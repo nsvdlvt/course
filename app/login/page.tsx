@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import { Lock, Mail } from "lucide-react";
 
 import GoogleLoginButton from "@/components/GoogleLoginButton";
@@ -29,7 +29,7 @@ function getLoginErrorMessage(errorMessage: string) {
   return errorMessage || "Không đăng nhập được. Thử lại sau nhé.";
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
@@ -144,5 +144,13 @@ export default function LoginPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

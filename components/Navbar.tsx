@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   BookOpen,
@@ -29,7 +29,6 @@ type AccountProfile = {
 
 export default function Navbar() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
@@ -142,9 +141,10 @@ export default function Navbar() {
     account?.email.split("@")[0] ||
     "";
   const avatarText = displayName.charAt(0).toUpperCase();
-  const currentSearch = searchParams.toString();
-  const currentPath = `${pathname}${currentSearch ? `?${currentSearch}` : ""}`;
-  const loginHref = `/login?redirectTo=${encodeURIComponent(currentPath)}`;
+  const getLoginHref = () => {
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    return `/login?redirectTo=${encodeURIComponent(currentPath)}`;
+  };
 
   const accountPanel = account ? (
     <div className="relative min-w-0">
@@ -213,8 +213,12 @@ export default function Navbar() {
     </div>
   ) : (
     <Link
-      href={loginHref}
-      onClick={() => setIsMenuOpen(false)}
+      href="/login"
+      onClick={(event) => {
+        event.preventDefault();
+        setIsMenuOpen(false);
+        router.push(getLoginHref());
+      }}
       className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
     >
       <User size={18} />
