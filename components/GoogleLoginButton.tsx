@@ -1,41 +1,53 @@
 "use client";
 
+import Image from "next/image";
+
 import { supabase } from "@/lib/supabase";
 
-export default function GoogleLoginButton() {
+interface GoogleLoginButtonProps {
+  label?: string;
+  redirectTo?: string | null;
+}
+
+export default function GoogleLoginButton({
+  label = "Đăng nhập bằng Google",
+  redirectTo,
+}: GoogleLoginButtonProps) {
   const login = async () => {
+    const safeRedirectTo =
+      redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
+        ? redirectTo
+        : "/home";
+
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/home`,
+        redirectTo: `${window.location.origin}${safeRedirectTo}`,
       },
     });
   };
 
   return (
     <button
+      type="button"
       onClick={login}
       className="
-        w-full
-        flex
         mt-4
+        flex
+        w-full
         items-center
         justify-center
         gap-3
+        rounded-xl
         border
         border-slate-200
-        rounded-xl
         py-3
+        transition
         hover:bg-slate-50
       "
     >
-      <img
-        src="/google.svg"
-        alt="Google"
-        className="w-5 h-5"
-      />
-
-      Đăng nhập bằng Google
+      <Image src="/google.svg" alt="Google" width={20} height={20} />
+      {label}
     </button>
   );
 }

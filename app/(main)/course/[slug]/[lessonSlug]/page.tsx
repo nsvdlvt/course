@@ -37,7 +37,7 @@ export default async function LessonPage({ params }: PageProps) {
     .single();
 
   if (!lesson) {
-    return <div className="p-10">Khong tim thay bai hoc</div>;
+    return <div className="p-10">Không tìm thấy bài học</div>;
   }
 
   const { data: lessonDocuments } = await supabase

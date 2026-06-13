@@ -1,22 +1,89 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import Image from "next/image";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   BookOpen,
+  ChevronDown,
   FileText,
-  BookText,
   Home,
+  KeyRound,
+  LogOut,
   Menu,
+  User,
+  UserCircle,
   X,
   BookA,
   type LucideIcon,
 } from "lucide-react";
 
+import { supabase } from "@/lib/supabase";
+
+type AccountProfile = {
+  email: string;
+  fullName: string | null;
+  username: string | null;
+};
+
 export default function Navbar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [account, setAccount] = useState<AccountProfile | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadAccount = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!mounted) {
+        return;
+      }
+
+      if (!user?.email) {
+        setAccount(null);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, username")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!mounted) {
+        return;
+      }
+
+      setAccount({
+        email: user.email,
+        fullName:
+          typeof profile?.full_name === "string" ? profile.full_name : null,
+        username:
+          typeof profile?.username === "string" ? profile.username : null,
+      });
+    };
+
+    loadAccount();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      loadAccount();
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const isActivePath = (href: string) => {
     if (href === "/") {
@@ -59,6 +126,101 @@ export default function Navbar() {
       </Link>
     );
   };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setAccount(null);
+    setIsMenuOpen(false);
+    setIsAccountMenuOpen(false);
+    router.push("/");
+    router.refresh();
+  };
+
+  const displayName =
+    account?.fullName?.trim() ||
+    account?.username?.trim() ||
+    account?.email.split("@")[0] ||
+    "";
+  const avatarText = displayName.charAt(0).toUpperCase();
+  const currentSearch = searchParams.toString();
+  const currentPath = `${pathname}${currentSearch ? `?${currentSearch}` : ""}`;
+  const loginHref = `/login?redirectTo=${encodeURIComponent(currentPath)}`;
+
+  const accountPanel = account ? (
+    <div className="relative min-w-0">
+      <button
+        type="button"
+        aria-label="Mở menu tài khoản"
+        aria-expanded={isAccountMenuOpen}
+        onClick={() => setIsAccountMenuOpen((current) => !current)}
+        className="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition hover:border-blue-200 hover:bg-blue-50"
+      >
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
+          {avatarText}
+        </div>
+
+        <div className="min-w-0 text-left">
+          <p className="truncate text-sm font-semibold text-slate-800">
+            {displayName}
+          </p>
+          <p className="truncate text-xs text-slate-500">{account.email}</p>
+        </div>
+
+        <ChevronDown
+          size={16}
+          className={`shrink-0 text-slate-500 transition ${
+            isAccountMenuOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {isAccountMenuOpen && (
+        <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-2 shadow-xl">
+          <Link
+            href="/profile"
+            onClick={() => {
+              setIsMenuOpen(false);
+              setIsAccountMenuOpen(false);
+            }}
+            className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-blue-50 hover:text-blue-700"
+          >
+            <UserCircle size={18} />
+            <span>Thông tin cá nhân</span>
+          </Link>
+
+          <Link
+            href="/reset-password"
+            onClick={() => {
+              setIsMenuOpen(false);
+              setIsAccountMenuOpen(false);
+            }}
+            className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-blue-50 hover:text-blue-700"
+          >
+            <KeyRound size={18} />
+            <span>Mật khẩu</span>
+          </Link>
+
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
+          >
+            <LogOut size={18} />
+            <span>Đăng xuất</span>
+          </button>
+        </div>
+      )}
+    </div>
+  ) : (
+    <Link
+      href={loginHref}
+      onClick={() => setIsMenuOpen(false)}
+      className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+    >
+      <User size={18} />
+      <span>Đăng nhập</span>
+    </Link>
+  );
 
   const navItems = (
     <>
@@ -110,22 +272,24 @@ export default function Navbar() {
             className="
               h-11
               w-11
-              rounded-2xl
-              bg-gradient-to-br
-              from-blue-500
-              via-indigo-500
-              to-purple-600
+              overflow-hidden
+              rounded-xl
               flex
               items-center
               justify-center
-              text-white
-              shadow-lg
               transition-all
               duration-300
               group-hover:scale-105
             "
           >
-            <BookText size={22} />
+            <Image
+              src="/logo.png"
+              alt="NSVDCourse"
+              width={44}
+              height={44}
+              className="h-11 w-11 object-contain"
+              priority
+            />
           </div>
 
           <div>
@@ -140,9 +304,10 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop menu */}
-        <nav className="navbar-desktop-menu items-center gap-2">
-          {navItems}
-        </nav>
+        <div className="navbar-desktop-menu items-center gap-3">
+          <nav className="flex items-center gap-2">{navItems}</nav>
+          {accountPanel}
+        </div>
 
         <button
           type="button"
@@ -171,6 +336,7 @@ export default function Navbar() {
         <nav className="navbar-mobile-menu border-t border-slate-200/70 bg-white/95 px-4 py-3 shadow-sm">
           <div className="mx-auto flex max-w-7xl flex-col gap-2">
             {navItems}
+            <div className="pt-2">{accountPanel}</div>
           </div>
         </nav>
       )}

@@ -4,12 +4,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { ArrowRight, BookOpenCheck } from "lucide-react";
 
 interface Props {
   title: string;
   image: string;
   href: string;
-  color: string;
   description: string;
 }
 
@@ -17,7 +17,6 @@ export default function CourseCard({
   title,
   image,
   href,
-  color,
   description,
 }: Props) {
   const router = useRouter();
@@ -28,59 +27,130 @@ export default function CourseCard({
 
     setTimeout(() => {
       router.push(href);
-    }, 350);
+    }, 250);
   };
 
   return (
     <motion.div
       whileHover={{
-        scale: 1.04,
-        y: -8,
+        y: -6,
       }}
       whileTap={{
-        scale: 0.96,
+        scale: 0.98,
       }}
       onClick={handleClick}
       className={`
-        cursor-pointer
-        rounded-3xl
-        bg-white/60 backdrop-blur-xl
-        p-10
-        shadow-[0_10px_40px_rgba(0,0,0,0.15)]
-        transition-all
-        border
-        overflow-hidden
+        group
         relative
-
+        cursor-pointer
+        overflow-hidden
+        rounded-[2rem]
+        border
+        border-white/80
+        bg-white/80
+        p-5
+        shadow-[0_18px_45px_rgba(15,23,42,0.08)]
+        backdrop-blur-xl
+        transition-all
+        duration-300
+        hover:border-cyan-200
+        hover:shadow-[0_24px_60px_rgba(14,116,144,0.14)]
         ${
           loading
-            ? "scale-95 brightness-110 shadow-[0_0_80px_rgba(59,130,246,.5)]"
+            ? "scale-[0.98] brightness-105 shadow-[0_18px_70px_rgba(14,116,144,0.22)]"
             : ""
         }
       `}
     >
       <div
-        className={`absolute inset-0 opacity-0 hover:opacity-100 transition duration-500 bg-gradient-to-br ${color}`}
+        className="
+          absolute
+          inset-x-0
+          top-0
+          h-28
+          bg-gradient-to-r
+          from-cyan-100/80
+          via-sky-50
+          to-amber-100/70
+          opacity-80
+          transition
+          duration-500
+          group-hover:opacity-100
+        "
       />
 
-      <div className="relative z-10">
-        <div className="flex justify-center mb-6">
+      <div className="relative z-10 flex h-full flex-col">
+        <div
+          className="
+            mb-6
+            flex
+            aspect-[16/10]
+            items-center
+            justify-center
+            rounded-[1.5rem]
+            border
+            border-white/80
+            bg-white/75
+            p-8
+            shadow-inner
+          "
+        >
           <Image
             src={image}
             alt={title}
-            width={180}
-            height={180}
-            className="object-contain transition duration-300 hover:scale-110"
+            width={220}
+            height={160}
+            className="
+              max-h-32
+              w-auto
+              rounded-2xl
+              object-contain
+              transition
+              duration-300
+              group-hover:scale-105
+            "
           />
         </div>
 
-        <h2 className="text-4xl font-bold text-center mb-3">
-          {title}
-        </h2>
+        <div className="flex flex-1 flex-col">
+          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-cyan-700">
+            <BookOpenCheck size={18} />
+            <span>Khóa học</span>
+          </div>
 
-        <p className="text-center text-gray-500">
-          {description}
-        </p>
+          <h2 className="text-3xl font-black leading-tight text-slate-900">
+            {title}
+          </h2>
+
+          <p className="mt-3 line-clamp-3 leading-7 text-slate-600">
+            {description}
+          </p>
+
+          <div className="mt-7 flex items-center justify-between border-t border-slate-200/70 pt-5">
+            <span className="text-sm font-semibold text-slate-500">
+              Vào học ngay
+            </span>
+
+            <span
+              className="
+                flex
+                h-11
+                w-11
+                items-center
+                justify-center
+                rounded-full
+                bg-slate-900
+                text-white
+                transition
+                duration-300
+                group-hover:translate-x-1
+                group-hover:bg-cyan-600
+              "
+            >
+              <ArrowRight size={20} />
+            </span>
+          </div>
+        </div>
       </div>
     </motion.div>
   );

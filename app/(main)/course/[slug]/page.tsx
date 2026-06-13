@@ -14,6 +14,12 @@ interface PageProps {
   }>;
 }
 
+interface Lesson {
+  id: string;
+  slug: string;
+  title: string;
+}
+
 export default async function CoursePage({
   params,
 }: PageProps) {
@@ -180,11 +186,12 @@ export default async function CoursePage({
                   chapter.id
                 }
                 title={`CHƯƠNG ${chapter.position}: ${chapter.title}`}
+                subtitle={`${chapter.lessons.length} bài học`}
               >
-                <div className="divide-y">
+                <div className="divide-y divide-slate-200/60">
                   {chapter.lessons.map(
                     (
-                      lesson: any
+                      lesson: Lesson
                     ) => (
                       <Link
                         key={
@@ -197,9 +204,9 @@ export default async function CoursePage({
                           justify-between
                           px-6
                           py-4
-
                           hover:bg-slate-50
-                          transition
+                          transition-colors
+                          duration-200
                         "
                       >
                         <div className="flex items-center gap-3">
