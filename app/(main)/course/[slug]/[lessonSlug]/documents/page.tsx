@@ -1,7 +1,8 @@
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import {
   FileText,
-  Download,
+  Eye,
 } from "lucide-react";
 
 interface PageProps {
@@ -10,6 +11,16 @@ interface PageProps {
     lessonSlug: string;
   }>;
 }
+
+type DocumentItem = {
+  id: string;
+  title: string;
+  file_name: string | null;
+};
+
+type LessonDocument = {
+  documents: DocumentItem | DocumentItem[] | null;
+};
 
 export default async function DocumentsPage({
   params,
@@ -46,12 +57,17 @@ export default async function DocumentsPage({
     );
 
   const documents =
-    (lessonDocuments || [])
+    ((lessonDocuments || []) as LessonDocument[])
       .flatMap(
-        (item: any) =>
-          item.documents
-            ? [item.documents]
-            : []
+        (item) => {
+          if (!item.documents) {
+            return [];
+          }
+
+          return Array.isArray(item.documents)
+            ? item.documents
+            : [item.documents];
+        }
       );
 
   return (
@@ -72,14 +88,10 @@ export default async function DocumentsPage({
       ) : (
         <div className="space-y-4">
           {documents.map(
-            (doc: any) => (
-              <a
+            (doc) => (
+              <Link
                 key={doc.id}
-                href={
-                  doc.file_url
-                }
-                target="_blank"
-                rel="noreferrer"
+                href={`/documents/${doc.id}`}
                 className="
                   flex
                   items-center
@@ -109,8 +121,8 @@ export default async function DocumentsPage({
                   </div>
                 </div>
 
-                <Download />
-              </a>
+                <Eye />
+              </Link>
             )
           )}
         </div>

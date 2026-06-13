@@ -84,11 +84,9 @@ export async function GET(
   const asciiFileName = getAsciiFileName(fileName);
   const headers = new Headers({
     "Content-Disposition": `attachment; filename="${asciiFileName}"; filename*=UTF-8''${encodedFileName}`,
-    "Content-Type":
-      item.file_type ||
-      file.type ||
-      "application/octet-stream",
+    "Content-Type": "application/octet-stream",
     "Cache-Control": "no-store",
+    "X-Content-Type-Options": "nosniff",
   });
 
   if (file.size) {

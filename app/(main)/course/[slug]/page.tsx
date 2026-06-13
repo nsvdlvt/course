@@ -3,6 +3,8 @@ import {
   Atom,
   Sigma,
   PlayCircle,
+  FlaskConical,
+  Globe,
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
