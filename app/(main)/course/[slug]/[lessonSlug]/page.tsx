@@ -42,10 +42,12 @@ export default async function LessonPage({ params }: PageProps) {
 
   const { data: lessonDocuments } = await supabase
     .from("lesson_documents")
-    .select(`
-      document_id,
-      documents(*)
-    `)
+    .select(
+      `
+        document_id,
+        documents(*)
+      `
+    )
     .eq("lesson_id", lesson.id);
 
   const { data: sections } = await supabase
@@ -54,10 +56,15 @@ export default async function LessonPage({ params }: PageProps) {
     .eq("lesson_id", lesson.id)
     .order("position");
 
-  const documents = ((lessonDocuments || []) as LessonDocumentLink[]).flatMap((item) => {
-    if (!item.documents) return [];
-    return Array.isArray(item.documents) ? item.documents : [item.documents];
-  });
+  const documents = ((lessonDocuments || []) as LessonDocumentLink[]).flatMap(
+    (item) => {
+      if (!item.documents) {
+        return [];
+      }
+
+      return Array.isArray(item.documents) ? item.documents : [item.documents];
+    }
+  );
 
   return (
     <main className="mx-auto max-w-7xl px-6 py-8">

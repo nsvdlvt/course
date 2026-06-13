@@ -1,10 +1,8 @@
 import { notFound } from "next/navigation";
+import { Download, ExternalLink, FileText } from "lucide-react";
+
 import BackButton from "@/components/BackButton";
-import {
-  Download,
-  ExternalLink,
-  FileText,
-} from "lucide-react";
+import PdfExamViewer from "@/components/PdfExamViewer";
 import { supabase } from "@/lib/supabase";
 
 type DocumentItem = {
@@ -25,7 +23,9 @@ type PageProps = {
 };
 
 function formatFileSize(size: number | null) {
-  if (!size) return "Không rõ dung lượng";
+  if (!size) {
+    return "Không rõ dung lượng";
+  }
 
   const mb = size / 1024 / 1024;
 
@@ -67,31 +67,14 @@ function getDownloadUrl(document: DocumentItem) {
   return `/api/documents/${document.id}/download`;
 }
 
-function FilePreview({
-  document,
-}: {
-  document: DocumentItem;
-}) {
+function FilePreview({ document }: { document: DocumentItem }) {
   const previewType = getPreviewType(document);
 
   if (previewType === "pdf") {
     return (
-      <>
-        <div className="md:hidden">
-          <PreviewFallback
-            document={document}
-            title="Mở PDF để xem đầy đủ"
-            description="iPhone thường không cuộn ổn định PDF khi nhúng trực tiếp trong trang. Mở file riêng sẽ xem và lướt được toàn bộ tài liệu."
-            openLabel="Xem PDF"
-          />
-        </div>
-
-        <iframe
-          src={document.file_url}
-          title={document.title}
-          className="hidden h-[75vh] min-h-[520px] w-full rounded-2xl border border-slate-200 bg-white md:block"
-        />
-      </>
+      <div className="h-[75vh] min-h-[520px] overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <PdfExamViewer fileUrl={document.file_url} />
+      </div>
     );
   }
 
@@ -113,10 +96,7 @@ function FilePreview({
         controls
         className="h-auto max-h-[75vh] w-full rounded-2xl border border-slate-200 bg-black"
       >
-        <source
-          src={document.file_url}
-          type={document.file_type || undefined}
-        />
+        <source src={document.file_url} type={document.file_type || undefined} />
       </video>
     );
   }
@@ -124,10 +104,7 @@ function FilePreview({
   if (previewType === "audio") {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-8">
-        <audio
-          controls
-          className="w-full"
-        >
+        <audio controls className="w-full">
           <source
             src={document.file_url}
             type={document.file_type || undefined}
@@ -157,13 +134,9 @@ function PreviewFallback({
         <FileText size={32} />
       </div>
 
-      <h2 className="text-xl font-bold text-slate-900">
-        {title}
-      </h2>
+      <h2 className="text-xl font-bold text-slate-900">{title}</h2>
 
-      <p className="mt-2 max-w-lg text-slate-500">
-        {description}
-      </p>
+      <p className="mt-2 max-w-lg text-slate-500">{description}</p>
 
       <div className="mt-6 flex flex-wrap justify-center gap-3">
         <a
@@ -189,9 +162,7 @@ function PreviewFallback({
   );
 }
 
-export default async function DocumentDetailPage({
-  params,
-}: PageProps) {
+export default async function DocumentDetailPage({ params }: PageProps) {
   const { id } = await params;
 
   const { data: document } = await supabase

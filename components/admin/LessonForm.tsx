@@ -23,12 +23,14 @@ interface Props {
   chapterId: string;
   documents: DocumentItem[];
   folders: any[];
+  initialPosition?: number;
 }
 
 export default function LessonForm({
   chapterId,
   documents,
   folders,
+  initialPosition = 1,
 }: Props) {
   const router = useRouter();
 
@@ -37,7 +39,7 @@ export default function LessonForm({
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
-  const [position, setPosition] = useState(1);
+  const [position, setPosition] = useState(initialPosition);
   const [isNew, setIsNew] = useState(true);
   const [availableDocuments, setAvailableDocuments] =
     useState<DocumentItem[]>(documents);
@@ -65,74 +67,49 @@ export default function LessonForm({
       .replace(/[^a-zA-Z0-9.-]/g, "_");
   }
 
-  async function uploadAndSelectDocuments() {
-    if (uploadFiles.length === 0) {
-      alert("Chua chon file");
-      return;
-    }
+  async function uploadPendingDocuments() {
+    const uploadedDocuments: DocumentItem[] = [];
 
-    try {
-      setUploadingDocuments(true);
+    for (const file of uploadFiles) {
+      const filePath = `${Date.now()}-${crypto.randomUUID()}-${getSafeFileName(
+        file.name
+      )}`;
 
-      const uploadedDocuments: DocumentItem[] = [];
+      const { error: uploadError } = await supabase.storage
+        .from("documents")
+        .upload(filePath, file);
 
-      for (const file of uploadFiles) {
-        const filePath = `${Date.now()}-${crypto.randomUUID()}-${getSafeFileName(
-          file.name
-        )}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("documents")
-          .upload(filePath, file);
-
-        if (uploadError) {
-          alert(uploadError.message);
-          continue;
-        }
-
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from("documents").getPublicUrl(filePath);
-
-        const title = file.name.replace(/\.[^/.]+$/, "");
-        const { data: document, error: dbError } = await supabase
-          .from("documents")
-          .insert({
-            title,
-            description: "",
-            folder_id: uploadFolderId || null,
-            file_url: publicUrl,
-            file_name: file.name,
-            file_size: file.size,
-            file_type: file.type,
-          })
-          .select()
-          .single();
-
-        if (dbError) {
-          alert(dbError.message);
-          continue;
-        }
-
-        uploadedDocuments.push(document);
+      if (uploadError) {
+        throw new Error(uploadError.message);
       }
 
-      if (uploadedDocuments.length > 0) {
-        setAvailableDocuments((current) => [
-          ...uploadedDocuments,
-          ...current,
-        ]);
-        setSelectedDocuments((current) => [
-          ...new Set([
-            ...current,
-            ...uploadedDocuments.map((document) => document.id),
-          ]),
-        ]);
-        setUploadFiles([]);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("documents").getPublicUrl(filePath);
+
+      const title = file.name.replace(/\.[^/.]+$/, "");
+      const { data: document, error: dbError } = await supabase
+        .from("documents")
+        .insert({
+          title,
+          description: "",
+          folder_id: uploadFolderId || null,
+          file_url: publicUrl,
+          file_name: file.name,
+          file_size: file.size,
+          file_type: file.type,
+        })
+        .select()
+        .single();
+
+      if (dbError) {
+        throw new Error(dbError.message);
       }
-    } finally {
-      setUploadingDocuments(false);
+
+      uploadedDocuments.push(document);
     }
+
+    return uploadedDocuments;
   }
 
   async function createLesson() {
@@ -143,6 +120,9 @@ export default function LessonForm({
 
     try {
       setLoading(true);
+      setUploadingDocuments(uploadFiles.length > 0);
+
+      const uploadedDocuments = await uploadPendingDocuments();
 
       const { data: lesson, error } = await supabase
         .from("lessons")
@@ -180,8 +160,15 @@ export default function LessonForm({
         }
       }
 
-      if (selectedDocuments.length > 0) {
-        const links = selectedDocuments.map((documentId) => ({
+      const documentIds = [
+        ...new Set([
+          ...selectedDocuments,
+          ...uploadedDocuments.map((document) => document.id),
+        ]),
+      ];
+
+      if (documentIds.length > 0) {
+        const links = documentIds.map((documentId) => ({
           lesson_id: lesson.id,
           document_id: documentId,
         }));
@@ -201,6 +188,7 @@ export default function LessonForm({
       router.refresh();
     } finally {
       setLoading(false);
+      setUploadingDocuments(false);
     }
   }
 
@@ -289,7 +277,7 @@ export default function LessonForm({
       <div className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-5">
         <div className="mb-4 flex items-center gap-2 font-semibold">
           <UploadCloud size={20} />
-          Upload tai lieu cho bai hoc nay
+          Tai lieu se upload khi tao bai hoc
         </div>
 
         <div className="grid gap-4 md:grid-cols-[1fr_220px]">
@@ -340,24 +328,23 @@ export default function LessonForm({
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={uploadAndSelectDocuments}
-          disabled={uploadingDocuments || uploadFiles.length === 0}
-          className="mt-4 rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {uploadingDocuments
-            ? "Dang upload..."
-            : "Upload va chon cho bai hoc"}
-        </button>
+        {uploadFiles.length > 0 && (
+          <p className="mt-4 text-sm font-medium text-slate-600">
+            Cac file nay se tu dong upload va gan vao bai hoc khi bam Tao bai hoc.
+          </p>
+        )}
       </div>
 
       <button
         onClick={createLesson}
-        disabled={loading}
+        disabled={loading || uploadingDocuments}
         className="rounded-xl bg-blue-600 px-6 py-3 text-white disabled:opacity-50"
       >
-        {loading ? "Dang tao..." : "Tao bai hoc"}
+        {uploadingDocuments
+          ? "Dang upload tai lieu..."
+          : loading
+            ? "Dang tao..."
+            : "Tao bai hoc"}
       </button>
     </div>
   );

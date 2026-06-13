@@ -87,11 +87,11 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
           className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-white"
         >
           {mobileOpen ? <X size={18} /> : <Menu size={18} />}
-          {hasSections ? "Tiet hoc" : "Bai hoc"}
+          {hasSections ? "Tiết học" : "Bài học"}
         </button>
 
         <div className="min-w-0 truncate text-sm font-semibold text-slate-700">
-          Video tiet hoc: [{activeTitle}]
+          Video tiết học: [{activeTitle}]
         </div>
       </div>
 
@@ -100,15 +100,15 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
           <button
             type="button"
             className="absolute inset-0"
-            aria-label="Dong menu"
+            aria-label="Đóng menu"
             onClick={() => setMobileOpen(false)}
           />
 
           <aside className="absolute left-0 top-0 h-full w-[88vw] max-w-[360px] overflow-y-auto bg-slate-950 p-5 text-white shadow-2xl">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <div className="text-xl font-bold">Tiet hoc</div>
-                <div className="text-sm text-slate-400">Video theo tung tiet.</div>
+                <div className="text-xl font-bold">Tiết học</div>
+                <div className="text-sm text-slate-400">Video theo từng tiết.</div>
               </div>
 
               <button
@@ -139,10 +139,10 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
                     }`}
                   >
                     <div className="text-xs uppercase tracking-wide text-cyan-300">
-                      Tiet {section.position || index + 1}
+                      Tiết {section.position || index + 1}
                     </div>
                     <div className="mt-1 max-h-12 overflow-y-auto pr-1 text-sm font-semibold leading-snug text-white [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.6)_transparent]">
-                      {section.title || `Tiet ${index + 1}`}
+                      {section.title || `Tiết ${index + 1}`}
                     </div>
                   </button>
                 );
@@ -160,8 +160,8 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
         {hasSections ? (
           <aside className="hidden h-full min-h-0 rounded-l-[28px] bg-slate-950 p-5 text-white xl:flex xl:flex-col">
             <div className="mb-4 shrink-0">
-              <div className="text-2xl font-bold">Tiet hoc</div>
-              <div className="mt-1 text-sm text-slate-400">Video theo tung tiet.</div>
+              <div className="text-2xl font-bold">Tiết học</div>
+              <div className="mt-1 text-sm text-slate-400">Video theo từng tiết.</div>
             </div>
 
             <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.7)_transparent]">
@@ -180,10 +180,10 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
                     }`}
                   >
                     <div className="text-xs uppercase tracking-wide text-cyan-300">
-                      Tiet {section.position || index + 1}
+                      Tiết {section.position || index + 1}
                     </div>
                     <div className="mt-1 max-h-12 overflow-y-auto pr-1 text-sm font-semibold leading-snug text-white [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.6)_transparent]">
-                      {section.title || `Tiet ${index + 1}`}
+                      {section.title || `Tiết ${index + 1}`}
                     </div>
                   </button>
                 );
@@ -195,7 +195,7 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
         <div className="h-[420px] min-w-0 overflow-hidden rounded-r-[28px] bg-[#f6f1dc] p-2 sm:h-[520px] xl:h-full xl:p-4">
           <div className="h-full overflow-hidden rounded-2xl bg-white shadow-[0_18px_60px_rgba(15,23,42,0.12)]">
             <div className="truncate border-b border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900">
-              Video tiet hoc: [{activeTitle}]
+              Video tiết học: [{activeTitle}]
             </div>
 
             {activeVideoUrl ? (
@@ -213,14 +213,16 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-200">
                   <PlayCircle size={34} className="text-slate-500" />
                 </div>
-                <h2 className="text-xl font-bold sm:text-2xl">Video dang duoc cap nhat</h2>
+                <h2 className="text-xl font-bold sm:text-2xl">
+                  Video đang được cập nhật
+                </h2>
               </div>
             )}
           </div>
 
           {!hasSections && (
             <div className="mt-4 rounded-2xl bg-white p-4 text-sm text-slate-500 shadow-sm">
-              Bai hoc nay khong co tiet hoc, video se dung video cua bai hoc.
+              Bài học này không có tiết học, video sẽ dùng video của bài học.
             </div>
           )}
         </div>
@@ -232,13 +234,17 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
             <BookOpen size={24} />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">Tai lieu bai hoc</h2>
-            <p className="text-sm text-slate-500">File giu nguyen theo bai hoc.</p>
+            <h2 className="text-2xl font-bold">Tài liệu bài học</h2>
+            <p className="text-sm text-slate-500">
+              Các tài liệu bổ trợ bài học
+            </p>
           </div>
         </div>
 
         {documents.length === 0 ? (
-          <div className="py-12 text-center text-slate-500">Chua co tai lieu</div>
+          <div className="py-12 text-center text-slate-500">
+            Chưa có tài liệu
+          </div>
         ) : (
           <div className="space-y-4">
             {documents.map((doc) => (

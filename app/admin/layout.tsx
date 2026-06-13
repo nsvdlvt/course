@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   Users,
   BookOpen,
+  ClipboardList,
   FileText,
   LogOut,
 } from "lucide-react";
@@ -59,6 +60,13 @@ export default function AdminLayout({
           >
             <FileText size={20} />
             Tài liệu
+          </Link>
+          <Link
+            href="/admin/exams"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-800"
+          >
+            <ClipboardList size={20} />
+            Đề thi
           </Link>
         </nav>
       </aside>

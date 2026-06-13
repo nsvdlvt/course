@@ -24,6 +24,20 @@ export default async function NewLessonPage({
       .select("*")
       .order("name");
 
+  const { data: lastLesson } =
+    await supabase
+      .from("lessons")
+      .select("position")
+      .eq("chapter_id", id)
+      .order("position", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+  const nextPosition =
+    typeof lastLesson?.position === "number"
+      ? lastLesson.position + 1
+      : 1;
+
   return (
     <div className="max-w-4xl">
       <h1 className="text-4xl font-black mb-8">
@@ -34,6 +48,7 @@ export default async function NewLessonPage({
         chapterId={id}
         documents={documents || []}
         folders={folders || []}
+        initialPosition={nextPosition}
       />
     </div>
   );

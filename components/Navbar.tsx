@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import {
   BookOpen,
   ChevronDown,
+  ClipboardList,
   FileText,
   Home,
   KeyRound,
@@ -244,6 +245,12 @@ export default function Navbar() {
         "/documents",
         "Tài liệu",
         FileText
+      )}
+
+      {navItem(
+        "/exam",
+        "Thi Online",
+        ClipboardList
       )}
 
       {navItem(
