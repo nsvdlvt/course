@@ -1,16 +1,21 @@
 import { supabase } from "@/lib/supabase";
 import CourseCard from "../components/CourseCard";
 
+export const dynamic = "force-dynamic";
+
 interface Course {
   id: string;
   title: string;
   slug: string;
-  image: string;
-  description: string;
+  image: string | null;
+  description: string | null;
 }
 
 export default async function CoursePage() {
-  const { data: courses } = await supabase.from("courses").select("*");
+  const { data: courses } = await supabase
+    .from("courses")
+    .select("*")
+    .order("title");
 
   return (
     <main className="min-h-screen bg-[linear-gradient(135deg,#f8fbff_0%,#eef9f6_48%,#fff7ed_100%)]">
@@ -35,9 +40,9 @@ export default async function CoursePage() {
             <CourseCard
               key={course.id}
               title={course.title}
-              image={`/${course.image}`}
+              image={course.image ? `/${course.image}` : "/logo.png"}
               href={`/course/${course.slug}`}
-              description={course.description}
+              description={course.description || ""}
             />
           ))}
         </div>

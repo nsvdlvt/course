@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BookOpen, ChevronRight, Layers3, Plus, PlayCircle } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { sortLessonsByDisplayOrder } from "@/lib/lesson-sort";
 
 interface PageProps {
   params: Promise<{
@@ -28,7 +29,8 @@ export default async function CourseDetailPage({ params }: PageProps) {
         .eq("chapter_id", chapter.id)
         .order("position");
 
-      const lessonIds = (lessons || []).map((lesson) => lesson.id);
+      const sortedLessons = sortLessonsByDisplayOrder(lessons || []);
+      const lessonIds = sortedLessons.map((lesson) => lesson.id);
       const { data: sections } = lessonIds.length
         ? await supabase.from("lesson_sections").select("*").in("lesson_id", lessonIds)
         : { data: [] };
@@ -43,7 +45,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
 
       return {
         ...chapter,
-        lessons: lessons || [],
+        lessons: sortedLessons,
         sectionCountByLesson,
         totalSections: (sections || []).length,
       };

@@ -1,4 +1,5 @@
 import NextTopLoader from "nextjs-toploader";
+import AuthGuard from "@/components/AuthGuard";
 import Navbar from "@/components/Navbar";
 
 export default function MainLayout({
@@ -7,7 +8,7 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <AuthGuard>
       <NextTopLoader
         color="#2563eb"
         showSpinner={false}
@@ -17,6 +18,6 @@ export default function MainLayout({
       <Navbar />
 
       {children}
-    </>
+    </AuthGuard>
   );
 }

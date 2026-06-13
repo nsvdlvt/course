@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Layers3, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { sortLessonsByDisplayOrder } from "@/lib/lesson-sort";
 
 export default async function ChapterPage({
   params,
@@ -21,7 +22,8 @@ export default async function ChapterPage({
     .eq("chapter_id", id)
     .order("position");
 
-  const lessonIds = (lessons || []).map((lesson) => lesson.id);
+  const sortedLessons = sortLessonsByDisplayOrder(lessons || []);
+  const lessonIds = sortedLessons.map((lesson) => lesson.id);
   const { data: sections } = lessonIds.length
     ? await supabase.from("lesson_sections").select("*").in("lesson_id", lessonIds)
     : { data: [] };
@@ -62,7 +64,7 @@ export default async function ChapterPage({
       </div>
 
       <div className="space-y-3">
-        {(lessons || []).map((lesson) => (
+        {sortedLessons.map((lesson) => (
           <div key={lesson.id} className="rounded-2xl bg-white p-5 shadow">
             <div className="flex items-center justify-between gap-4">
               <div>

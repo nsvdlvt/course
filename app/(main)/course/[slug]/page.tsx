@@ -6,7 +6,9 @@ import {
 } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
+import { sortLessonsByDisplayOrder } from "@/lib/lesson-sort";
 import ChapterAccordion from "@/components/ChapterAccordion";
+import BackButton from "@/components/BackButton";
 
 interface PageProps {
   params: Promise<{
@@ -78,7 +80,7 @@ export default async function CoursePage({
           return {
             ...chapter,
             lessons:
-              lessons || [],
+              sortLessonsByDisplayOrder(lessons || []),
           };
         }
       )
@@ -119,18 +121,7 @@ export default async function CoursePage({
       <div className="max-w-7xl mx-auto px-6 py-10">
         {/* Header */}
         <div className="mb-10">
-          <Link
-            href="/home"
-            className="
-              inline-flex
-              items-center
-              gap-2
-              text-blue-600
-              hover:text-blue-800
-            "
-          >
-            ← Quay lại
-          </Link>
+          <BackButton />
 
           <div className="mt-6 flex items-center gap-5">
             <div

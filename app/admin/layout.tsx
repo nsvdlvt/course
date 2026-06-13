@@ -6,6 +6,7 @@ import {
   FileText,
   LogOut,
 } from "lucide-react";
+import AuthGuard from "@/components/AuthGuard";
 
 export default function AdminLayout({
   children,
@@ -13,7 +14,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex bg-slate-100">
+    <AuthGuard>
+      <div className="min-h-screen flex bg-slate-100">
       {/* Sidebar */}
       <aside className="w-72 bg-slate-900 text-white">
         <div className="p-6 border-b border-slate-800">
@@ -65,6 +67,7 @@ export default function AdminLayout({
       <main className="flex-1 p-8">
         {children}
       </main>
-    </div>
+      </div>
+    </AuthGuard>
   );
 }
