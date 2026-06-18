@@ -8,14 +8,16 @@ interface ChapterAccordionProps {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
+  defaultOpen?: boolean;
 }
 
 export default function ChapterAccordion({
   title,
   subtitle,
   children,
+  defaultOpen = false,
 }: ChapterAccordionProps) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
 
   return (
     <div

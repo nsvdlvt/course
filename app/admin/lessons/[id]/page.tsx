@@ -35,6 +35,11 @@ export default async function LessonPage({
     .from("folders")
     .select("*");
 
+  const { data: exams } = await supabase
+    .from("exams")
+    .select("id,title,lesson_section_id")
+    .order("title");
+
   const { data: linkedDocuments } =
     await supabase
       .from("lesson_documents")
@@ -47,13 +52,22 @@ export default async function LessonPage({
     .eq("lesson_id", lesson.id)
     .order("position");
 
+  const sectionsWithExam = (sections || []).map((section) => {
+    const linkedExam = (exams || []).find((exam) => exam.lesson_section_id === section.id);
+    return {
+      ...section,
+      exam_id: linkedExam?.id || null,
+    };
+  });
+
   return (
     <LessonEditor
       lesson={lesson}
       documents={documents || []}
       folders={folders || []}
       linkedDocuments={linkedDocuments || []}
-      sections={sections || []}
+      sections={sectionsWithExam}
+      exams={exams || []}
     />
   );
 }

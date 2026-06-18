@@ -7,9 +7,10 @@ import { supabase } from "@/lib/supabase";
 
 type AuthGuardProps = {
   children: ReactNode;
+  adminOnly?: boolean;
 };
 
-export default function AuthGuard({ children }: AuthGuardProps) {
+export default function AuthGuard({ children, adminOnly = false }: AuthGuardProps) {
   const router = useRouter();
   const [checkingSession, setCheckingSession] = useState(true);
 
@@ -35,6 +36,23 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         return;
       }
 
+      if (adminOnly) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", session.user.id)
+          .maybeSingle();
+
+        if (!mounted) {
+          return;
+        }
+
+        if (profile?.role !== "admin") {
+          router.replace("/home");
+          return;
+        }
+      }
+
       setCheckingSession(false);
     };
 
@@ -52,6 +70,11 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         return;
       }
 
+      if (adminOnly) {
+        void checkSession();
+        return;
+      }
+
       setCheckingSession(false);
     });
 
@@ -59,7 +82,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [router]);
+  }, [adminOnly, router]);
 
   if (checkingSession) {
     return (

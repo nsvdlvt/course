@@ -19,10 +19,16 @@ type DocumentItem = {
   file_type?: string | null;
 };
 
+type ExamItem = {
+  id: string;
+  title: string;
+};
+
 interface Props {
   chapterId: string;
   documents: DocumentItem[];
   folders: any[];
+  exams: ExamItem[];
   initialPosition?: number;
 }
 
@@ -30,6 +36,7 @@ export default function LessonForm({
   chapterId,
   documents,
   folders,
+  exams,
   initialPosition = 1,
 }: Props) {
   const router = useRouter();
@@ -48,7 +55,7 @@ export default function LessonForm({
   const [uploadFolderId, setUploadFolderId] = useState("");
   const [uploadingDocuments, setUploadingDocuments] = useState(false);
   const [sections, setSections] = useState<
-    { title: string; video_url: string; position: number }[]
+    { title: string; video_url: string; position: number; exam_id?: string | null }[]
   >([]);
 
   function generateSlug(value: string) {
@@ -145,18 +152,51 @@ export default function LessonForm({
       }
 
       if (sections.length > 0) {
-        const { error: sectionError } = await supabase.from("lesson_sections").insert(
-          sections.map((section) => ({
-            lesson_id: lesson.id,
-            title: section.title,
-            video_url: section.video_url,
-            position: section.position,
-          }))
-        );
+        const { data: insertedSections, error: sectionError } = await supabase
+          .from("lesson_sections")
+          .insert(
+            sections.map((section) => ({
+              lesson_id: lesson.id,
+              title: section.title,
+              video_url: section.video_url,
+              position: section.position,
+            }))
+          )
+          .select("id,position");
 
         if (sectionError) {
           alert(sectionError.message);
           return;
+        }
+
+        const sectionIdByPosition = new Map<number, string>();
+        (insertedSections || []).forEach((section: { id: string; position: number }) => {
+          sectionIdByPosition.set(section.position, section.id);
+        });
+
+        for (const section of sections) {
+          if (!section.exam_id) {
+            continue;
+          }
+
+          const sectionId = sectionIdByPosition.get(section.position);
+          if (!sectionId) {
+            continue;
+          }
+
+          const { error: examLinkError } = await supabase
+            .from("exams")
+            .update({
+              lesson_id: lesson.id,
+              lesson_section_id: sectionId,
+              exam_type: "lesson",
+            })
+            .eq("id", section.exam_id);
+
+          if (examLinkError) {
+            alert(examLinkError.message);
+            return;
+          }
         }
       }
 
@@ -261,7 +301,7 @@ export default function LessonForm({
 
       <div>
         <label className="mb-3 block font-medium">Tiet hoc</label>
-        <LessonSectionEditor sections={sections} onChange={setSections} />
+        <LessonSectionEditor sections={sections} onChange={setSections} exams={exams} />
       </div>
 
       <div>

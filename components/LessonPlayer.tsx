@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
-import { BookOpen, FileText, Menu, PlayCircle, X } from "lucide-react";
+import { BookOpen, ClipboardList, FileText, Menu, PlayCircle, X } from "lucide-react";
 
 type LessonDocument = {
   id: string;
@@ -10,11 +11,20 @@ type LessonDocument = {
   file_name: string | null;
 };
 
+type LessonSectionExam = {
+  id: string;
+  title: string;
+  slug: string;
+  duration_minutes: number | null;
+  question_count: number | null;
+};
+
 type LessonSection = {
   id: string;
   title: string;
   video_url: string | null;
   position: number;
+  exam?: LessonSectionExam | null;
 };
 
 type Lesson = {
@@ -78,6 +88,9 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
       : lesson.video_url || ""
   );
 
+  const activeExam = activeSection?.exam || null;
+  const showExamCard = Boolean(activeExam) && !activeVideoUrl;
+
   return (
     <div className="relative max-w-[1108px]">
       <div className="mb-4 flex items-center justify-between xl:hidden">
@@ -108,7 +121,7 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <div className="text-xl font-bold">Tiết học</div>
-                <div className="text-sm text-slate-400">Video theo từng tiết.</div>
+                <div className="text-sm text-slate-400">Video và bài thi theo từng tiết.</div>
               </div>
 
               <button
@@ -139,11 +152,14 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
                     }`}
                   >
                     <div className="text-xs uppercase tracking-wide text-cyan-300">
-                      Tiết {section.position || index + 1}
+                      {section.exam && !section.video_url ? "Bài thi" : "Tiết"} {section.position || index + 1}
                     </div>
                     <div className="mt-1 max-h-12 overflow-y-auto pr-1 text-sm font-semibold leading-snug text-white [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.6)_transparent]">
                       {section.title || `Tiết ${index + 1}`}
                     </div>
+                    {section.exam && (
+                      <div className="mt-2 text-xs text-emerald-300">Có bài thi online</div>
+                    )}
                   </button>
                 );
               })}
@@ -161,7 +177,7 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
           <aside className="hidden h-full min-h-0 rounded-l-[28px] bg-slate-950 p-5 text-white xl:flex xl:flex-col">
             <div className="mb-4 shrink-0">
               <div className="text-2xl font-bold">Tiết học</div>
-              <div className="mt-1 text-sm text-slate-400">Video theo từng tiết.</div>
+              <div className="mt-1 text-sm text-slate-400">Video và bài thi theo từng tiết.</div>
             </div>
 
             <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.7)_transparent]">
@@ -180,11 +196,14 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
                     }`}
                   >
                     <div className="text-xs uppercase tracking-wide text-cyan-300">
-                      Tiết {section.position || index + 1}
+                      {section.exam && !section.video_url ? "Bài thi" : "Tiết"} {section.position || index + 1}
                     </div>
                     <div className="mt-1 max-h-12 overflow-y-auto pr-1 text-sm font-semibold leading-snug text-white [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.6)_transparent]">
                       {section.title || `Tiết ${index + 1}`}
                     </div>
+                    {section.exam && (
+                      <div className="mt-2 text-xs text-emerald-300">Có bài thi online</div>
+                    )}
                   </button>
                 );
               })}
@@ -198,7 +217,30 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
               Video tiết học: [{activeTitle}]
             </div>
 
-            {activeVideoUrl ? (
+            {showExamCard && activeExam ? (
+              <div className="flex h-[calc(100%-49px)] w-full items-center justify-center bg-slate-50 px-6">
+                <div className="w-full max-w-xl rounded-3xl border border-emerald-200 bg-white p-6 text-center shadow-sm">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                    <ClipboardList size={32} />
+                  </div>
+                  <h2 className="text-2xl font-black text-slate-900">{activeExam.title}</h2>
+                  <p className="mt-3 text-sm text-slate-600">
+                    Đây là bài thi online của mục này. Nhấn nút bên dưới để chuyển sang trang làm đề.
+                  </p>
+                  <div className="mt-5 flex flex-wrap justify-center gap-3 text-sm font-semibold text-slate-600">
+                    <span className="rounded-full bg-slate-100 px-4 py-2">{activeExam.question_count || 0} câu</span>
+                    <span className="rounded-full bg-slate-100 px-4 py-2">{activeExam.duration_minutes || 0} phút</span>
+                  </div>
+                  <Link
+                    href={`/exam/${activeExam.slug}`}
+                    className="mt-6 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white hover:bg-emerald-700"
+                  >
+                    <ClipboardList size={18} />
+                    Làm bài thi
+                  </Link>
+                </div>
+              </div>
+            ) : activeVideoUrl ? (
               <div className="h-[calc(100%-49px)] w-full bg-slate-100">
                 <iframe
                   src={activeVideoUrl}
@@ -213,12 +255,30 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-200">
                   <PlayCircle size={34} className="text-slate-500" />
                 </div>
-                <h2 className="text-xl font-bold sm:text-2xl">
-                  Video đang được cập nhật
-                </h2>
+                <h2 className="text-xl font-bold sm:text-2xl">Video đang được cập nhật</h2>
               </div>
             )}
           </div>
+
+          {activeExam && !showExamCard && (
+            <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-sm">
+              <div className="mb-2 flex items-center gap-2 text-emerald-700">
+                <ClipboardList size={20} />
+                <h3 className="text-lg font-bold">Bài thi online</h3>
+              </div>
+              <p className="font-semibold text-slate-900">{activeExam.title}</p>
+              <p className="mt-2 text-sm text-slate-600">
+                {activeExam.question_count || 0} câu • {activeExam.duration_minutes || 0} phút
+              </p>
+              <Link
+                href={`/exam/${activeExam.slug}`}
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white hover:bg-emerald-700"
+              >
+                <ClipboardList size={18} />
+                Làm bài thi
+              </Link>
+            </div>
+          )}
 
           {!hasSections && (
             <div className="mt-4 rounded-2xl bg-white p-4 text-sm text-slate-500 shadow-sm">
@@ -235,16 +295,12 @@ export default function LessonPlayer({ lesson, sections, documents }: Props) {
           </div>
           <div>
             <h2 className="text-2xl font-bold">Tài liệu bài học</h2>
-            <p className="text-sm text-slate-500">
-              Các tài liệu bổ trợ bài học
-            </p>
+            <p className="text-sm text-slate-500">Các tài liệu bổ trợ bài học</p>
           </div>
         </div>
 
         {documents.length === 0 ? (
-          <div className="py-12 text-center text-slate-500">
-            Chưa có tài liệu
-          </div>
+          <div className="py-12 text-center text-slate-500">Chưa có tài liệu</div>
         ) : (
           <div className="space-y-4">
             {documents.map((doc) => (

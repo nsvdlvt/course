@@ -12,26 +12,18 @@ export default async function NewLessonPage({
 }: PageProps) {
   const { id } = await params;
 
-  const { data: documents } =
-    await supabase
-      .from("documents")
-      .select("*")
-      .order("title");
-
-  const { data: folders } =
-    await supabase
-      .from("folders")
-      .select("*")
-      .order("name");
-
-  const { data: lastLesson } =
-    await supabase
+  const [{ data: documents }, { data: folders }, { data: lastLesson }, { data: exams }] = await Promise.all([
+    supabase.from("documents").select("*").order("title"),
+    supabase.from("folders").select("*").order("name"),
+    supabase
       .from("lessons")
       .select("position")
       .eq("chapter_id", id)
       .order("position", { ascending: false })
       .limit(1)
-      .maybeSingle();
+      .maybeSingle(),
+    supabase.from("exams").select("id,title").order("title"),
+  ]);
 
   const nextPosition =
     typeof lastLesson?.position === "number"
@@ -48,6 +40,7 @@ export default async function NewLessonPage({
         chapterId={id}
         documents={documents || []}
         folders={folders || []}
+        exams={exams || []}
         initialPosition={nextPosition}
       />
     </div>

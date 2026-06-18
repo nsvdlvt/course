@@ -96,11 +96,7 @@ export default function OnlineExam({
   );
 
   useEffect(() => {
-    if (!started || reviewing || showResult) {
-      return;
-    }
-
-    if (!endsAt) {
+    if (!started || reviewing || showResult || !endsAt) {
       return;
     }
 
@@ -148,11 +144,7 @@ export default function OnlineExam({
   }, [storageKey]);
 
   useEffect(() => {
-    if (!started || reviewing || showResult) {
-      return;
-    }
-
-    if (!endsAt) {
+    if (!started || reviewing || showResult || !endsAt) {
       return;
     }
 
@@ -171,27 +163,29 @@ export default function OnlineExam({
     { length: questionCount },
     (_, index) => index + 1
   ).filter((questionNumber) => !answers[questionNumber]);
-  const startExam = () => {
-    const endsAt = Date.now() + durationSeconds * 1000;
 
+  function startExam() {
+    const nextEndsAt = Date.now() + durationSeconds * 1000;
     setStarted(true);
-    setEndsAt(endsAt);
+    setEndsAt(nextEndsAt);
     setRemainingSeconds(durationSeconds);
     window.localStorage.setItem(
       storageKey,
       JSON.stringify({
         answers,
-        endsAt,
+        endsAt: nextEndsAt,
         started: true,
       } satisfies StoredExamProgress)
     );
-  };
-  const submitExam = () => {
+  }
+
+  function submitExam() {
     setShowSubmitConfirm(false);
     setShowResult(true);
     setAnswerSheetOpen(false);
     window.localStorage.removeItem(storageKey);
-  };
+  }
+
   const answerPanel = (
     <>
       <div className="mb-4 grid grid-cols-3 gap-3 sm:mb-5">
@@ -320,7 +314,7 @@ export default function OnlineExam({
         className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#1f6696] px-5 py-3 font-bold text-white transition hover:bg-[#285578] disabled:cursor-not-allowed disabled:opacity-50"
       >
         <CheckCircle2 size={20} />
-        Hoàn thành
+        Hoan thanh
       </button>
     </>
   );
@@ -329,92 +323,92 @@ export default function OnlineExam({
     <main className="min-h-screen bg-[#eef3f7] px-2 py-3 pb-24 sm:px-5 sm:py-4 sm:pb-4 lg:px-8">
       {!started && (
         <div className="flex min-h-[calc(100svh-96px)] items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, y: 18, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.28, ease: "easeOut" }}
-          className="w-full max-w-3xl rounded-3xl bg-white p-6 shadow-sm"
-        >
-          <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
-              <Info size={26} />
-            </div>
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#1f6696]">
-                Thông tin đề
-              </p>
-              <h1 className="text-3xl font-black text-slate-950">{title}</h1>
-            </div>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-4">
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <div className="text-sm font-semibold text-slate-500">Loại câu hỏi</div>
-              <div className="mt-2 text-xl font-bold">Trắc nghiệm A/B/C/D</div>
-            </div>
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <div className="text-sm font-semibold text-slate-500">Số lượng câu</div>
-              <div className="mt-2 text-xl font-bold">{questionCount} câu</div>
-            </div>
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <div className="text-sm font-semibold text-slate-500">Thời gian</div>
-              <div className="mt-2 text-xl font-bold">{durationMinutes} phút</div>
-            </div>
-            <div className="rounded-2xl bg-slate-50 p-4">
-              <div className="text-sm font-semibold text-slate-500">Thang điểm</div>
-              <div className="mt-2 text-xl font-bold">10 điểm</div>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={startExam}
-            className="mt-6 rounded-xl bg-[#1f6696] px-6 py-3 font-bold text-white transition hover:bg-[#285578]"
+          <motion.div
+            initial={{ opacity: 0, y: 18, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
+            className="w-full max-w-3xl rounded-3xl bg-white p-6 shadow-sm"
           >
-            Bắt đầu làm bài
-          </button>
-        </motion.div>
+            <div className="mb-5 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+                <Info size={26} />
+              </div>
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#1f6696]">
+                  Thông tin đề
+                </p>
+                <h1 className="text-3xl font-black text-slate-950">{title}</h1>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="text-sm font-semibold text-slate-500">Loại câu hỏi</div>
+                <div className="mt-2 text-xl font-bold">Trắc nghiệm A/B/C/D</div>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="text-sm font-semibold text-slate-500">Số lượng câu</div>
+                <div className="mt-2 text-xl font-bold">{questionCount} câu</div>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="text-sm font-semibold text-slate-500">Thời gian</div>
+                <div className="mt-2 text-xl font-bold">{durationMinutes} phút</div>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="text-sm font-semibold text-slate-500">Thang điểm</div>
+                <div className="mt-2 text-xl font-bold">10 điểm</div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={startExam}
+              className="mt-6 rounded-xl bg-[#1f6696] px-6 py-3 font-bold text-white transition hover:bg-[#285578]"
+            >
+              Bắt đầu làm bài
+            </button>
+          </motion.div>
         </div>
       )}
 
       {started && (
-      <div className="mx-auto grid max-w-[1780px] gap-4 xl:grid-cols-[minmax(0,1fr)_430px] xl:gap-5">
-        <section className="min-h-[calc(100svh-104px)] overflow-hidden rounded-md border border-slate-300 bg-slate-200 shadow-sm xl:min-h-[70vh]">
-          <div className="hidden items-center justify-between border-b border-slate-300 bg-slate-100 px-4 py-3 sm:flex">
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-blue-700">
-                <FileText size={22} />
+        <div className="mx-auto grid max-w-[1780px] gap-4 xl:grid-cols-[minmax(0,1fr)_430px] xl:gap-5">
+          <section className="min-h-[calc(100svh-104px)] overflow-hidden rounded-md border border-slate-300 bg-slate-200 shadow-sm xl:min-h-[70vh]">
+            <div className="hidden items-center justify-between border-b border-slate-300 bg-slate-100 px-4 py-3 sm:flex">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-blue-700">
+                  <FileText size={22} />
+                </div>
+                <div className="min-w-0">
+                  <h1 className="truncate text-lg font-bold text-slate-900">
+                    {title}
+                  </h1>
+                  <p className="truncate text-sm text-slate-500">
+                    Trình xem PDF cuộn liền trang, chọn đáp án ở bảng bên cạnh.
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <h1 className="truncate text-lg font-bold text-slate-900">
-                  {title}
-                </h1>
-                <p className="truncate text-sm text-slate-500">
-                  Trình xem PDF cuộn liên trang, chọn đáp án ở bảng bên cạnh.
-                </p>
-              </div>
+
+              <a
+                href={fileUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-50"
+              >
+                <ExternalLink size={16} />
+                Mở file
+              </a>
             </div>
 
-            <a
-              href={fileUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-50"
-            >
-              <ExternalLink size={16} />
-              Mở file
-            </a>
-          </div>
+            <div className="h-[calc(100svh-104px)] sm:h-[calc(100vh-132px)]">
+              <PdfExamViewer fileUrl={fileUrl} />
+            </div>
+          </section>
 
-          <div className="h-[calc(100svh-104px)] sm:h-[calc(100vh-132px)]">
-            <PdfExamViewer fileUrl={fileUrl} />
-          </div>
-        </section>
-
-        <aside className="hidden rounded-md bg-white p-5 shadow-sm xl:sticky xl:top-20 xl:block xl:max-h-[calc(100vh-96px)]">
-          {answerPanel}
-        </aside>
-      </div>
+          <aside className="hidden rounded-md bg-white p-5 shadow-sm xl:sticky xl:top-20 xl:block xl:max-h-[calc(100vh-96px)]">
+            {answerPanel}
+          </aside>
+        </div>
       )}
 
       {started && (
@@ -429,11 +423,7 @@ export default function OnlineExam({
               className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-md bg-[#0d4f7f] px-4 text-lg font-semibold"
             >
               Bài làm
-              {answerSheetOpen ? (
-                <ChevronDown size={22} />
-              ) : (
-                <ChevronUp size={22} />
-              )}
+              {answerSheetOpen ? <ChevronDown size={22} /> : <ChevronUp size={22} />}
             </button>
             <button
               type="button"
@@ -458,7 +448,7 @@ export default function OnlineExam({
           transition={{ duration: 0.22, ease: "easeOut" }}
           className="fixed inset-x-0 bottom-[88px] z-40 px-3 xl:hidden"
         >
-          <div className="mx-auto max-w-xl rounded-t-2xl bg-white p-4 shadow-2xl">
+          <div className="mx-auto max-w-xl rounded-t-2xl bg-white p-4">
             {answerPanel}
           </div>
         </motion.div>
@@ -514,43 +504,43 @@ export default function OnlineExam({
       </AnimatePresence>
 
       <AnimatePresence>
-      {showResult && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
-        >
+        {showResult && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.96 }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
-            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
           >
-            <h2 className="text-2xl font-black text-slate-950">
-              Kết quả bài thi
-            </h2>
-            <div className="mt-5 space-y-3 text-slate-700">
-              <div>Thời gian làm bài: {formatTime(result.usedSeconds)}</div>
-              <div>Số điểm: {result.score.toFixed(2)}/10</div>
-              <div>Số câu đúng: {result.correct}</div>
-              <div>Số câu sai: {result.wrong}</div>
-              <div>Tỉ lệ: {result.ratio.toFixed(1)}%</div>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setShowResult(false);
-                setReviewing(true);
-              }}
-              className="mt-6 w-full rounded-xl bg-[#1f6696] px-5 py-3 font-bold text-white hover:bg-[#285578]"
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.96 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
             >
-              OK
-            </button>
+              <h2 className="text-2xl font-black text-slate-950">
+                Kết quả bài thi
+              </h2>
+              <div className="mt-5 space-y-3 text-slate-700">
+                <div>Thời gian làm bài: {formatTime(result.usedSeconds)}</div>
+                <div>Số điểm: {result.score.toFixed(2)}/10</div>
+                <div>Số câu đúng: {result.correct}</div>
+                <div>Số câu sai: {result.wrong}</div>
+                <div>Tỉ lệ: {result.ratio.toFixed(1)}%</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowResult(false);
+                  setReviewing(true);
+                }}
+                className="mt-6 w-full rounded-xl bg-[#1f6696] px-5 py-3 font-bold text-white hover:bg-[#285578]"
+              >
+                OK
+              </button>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
+        )}
       </AnimatePresence>
     </main>
   );

@@ -19,6 +19,7 @@ interface LessonEditorProps {
   folders: any[];
   linkedDocuments: any[];
   sections: any[];
+  exams: any[];
 }
 
 export default function LessonEditor({
@@ -27,6 +28,7 @@ export default function LessonEditor({
   folders,
   linkedDocuments,
   sections,
+  exams,
 }: LessonEditorProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -39,13 +41,14 @@ export default function LessonEditor({
     linkedDocuments.map((item: any) => item.document_id)
   );
   const [lessonSections, setLessonSections] = useState<
-    { id?: string; title: string; video_url: string; position: number }[]
+    { id?: string; title: string; video_url: string; position: number; exam_id?: string | null }[]
   >(
     (sections || []).map((section: any) => ({
       id: section.id,
       title: section.title || "",
       video_url: section.video_url || "",
       position: section.position || 1,
+      exam_id: section.exam_id || null,
     }))
   );
 
@@ -79,8 +82,20 @@ export default function LessonEditor({
         return;
       }
 
+      const { error: resetExamLinksError } = await supabase
+        .from("exams")
+        .update({
+          lesson_section_id: null,
+        })
+        .eq("lesson_id", lesson.id);
+
+      if (resetExamLinksError) {
+        alert(resetExamLinksError.message);
+        return;
+      }
+
       if (lessonSections.length > 0) {
-        const { error: sectionError } = await supabase
+        const { data: insertedSections, error: sectionError } = await supabase
           .from("lesson_sections")
           .insert(
             lessonSections.map((section) => ({
@@ -89,11 +104,42 @@ export default function LessonEditor({
               video_url: section.video_url,
               position: section.position,
             }))
-          );
+          )
+          .select("id,position");
 
         if (sectionError) {
           alert(sectionError.message);
           return;
+        }
+
+        const sectionIdByPosition = new Map<number, string>();
+        (insertedSections || []).forEach((section: any) => {
+          sectionIdByPosition.set(section.position, section.id);
+        });
+
+        for (const section of lessonSections) {
+          if (!section.exam_id) {
+            continue;
+          }
+
+          const sectionId = sectionIdByPosition.get(section.position);
+          if (!sectionId) {
+            continue;
+          }
+
+          const { error: examLinkError } = await supabase
+            .from("exams")
+            .update({
+              lesson_id: lesson.id,
+              lesson_section_id: sectionId,
+              exam_type: "lesson",
+            })
+            .eq("id", section.exam_id);
+
+          if (examLinkError) {
+            alert(examLinkError.message);
+            return;
+          }
         }
       }
 
@@ -210,7 +256,7 @@ export default function LessonEditor({
           <FileText size={20} />
           <h2 className="font-bold">Tiet hoc</h2>
         </div>
-        <LessonSectionEditor sections={lessonSections} onChange={setLessonSections} />
+        <LessonSectionEditor sections={lessonSections} onChange={setLessonSections} exams={exams} />
       </div>
 
       <div className="rounded-3xl bg-white p-6 shadow">

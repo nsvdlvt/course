@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 export default async function CoursesPage() {
+  const supabase = await createSupabaseServerClient();
   const { data: courses } = await supabase
     .from("courses")
     .select("*")

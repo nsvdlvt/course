@@ -15,7 +15,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthGuard>
+    <AuthGuard adminOnly>
       <div className="min-h-screen flex bg-slate-100">
       {/* Sidebar */}
       <aside className="w-72 bg-slate-900 text-white">

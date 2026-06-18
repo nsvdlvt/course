@@ -26,9 +26,7 @@ export default async function ExamRoomPage({ params }: ExamRoomPageProps) {
 
   const { data: exam } = await supabase
     .from("exams")
-    .select(
-      "id,title,slug,file_url,duration_minutes,question_count,answers,exam_type,lesson_id"
-    )
+    .select("id,title,slug,file_url,duration_minutes,question_count,answers,exam_type,lesson_id")
     .eq("slug", slug)
     .single();
 
@@ -50,10 +48,7 @@ export default async function ExamRoomPage({ params }: ExamRoomPageProps) {
       durationMinutes={item.duration_minutes || 60}
       questionCount={item.question_count || 19}
       correctAnswers={Object.fromEntries(
-        Object.entries(item.answers || {}).map(([question, answer]) => [
-          Number(question),
-          answer,
-        ])
+        Object.entries(item.answers || {}).map(([question, answer]) => [Number(question), answer])
       )}
     />
   );

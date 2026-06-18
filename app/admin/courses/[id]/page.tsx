@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { BookOpen, ChevronRight, Layers3, Plus, PlayCircle } from "lucide-react";
 
+import CourseStructureEditor from "@/components/admin/CourseStructureEditor";
+import { countStructureStats, getCourseStructure, type ExamRecord, type LessonRecord } from "@/lib/course-structure";
 import { supabase } from "@/lib/supabase";
 import { sortLessonsByDisplayOrder } from "@/lib/lesson-sort";
 
@@ -51,9 +53,16 @@ export default async function CourseDetailPage({ params }: PageProps) {
       };
     })
   );
+  const { data: exams } = await supabase.from("exams").select("id,title,slug,lesson_id,exam_type").order("title");
 
+  const lessonsByChapterId = Object.fromEntries(
+    chapterData.map((chapter) => [chapter.id, chapter.lessons as LessonRecord[]])
+  );
+  const courseStructure = getCourseStructure(course.course_structure, chapters || [], lessonsByChapterId);
+  const structureStats = countStructureStats(courseStructure);
   const totalLessons = chapterData.reduce((sum, chapter) => sum + chapter.lessons.length, 0);
   const totalSections = chapterData.reduce((sum, chapter) => sum + chapter.totalSections, 0);
+  const allLessons = chapterData.flatMap((chapter) => chapter.lessons as LessonRecord[]);
 
   return (
     <div>
@@ -62,7 +71,8 @@ export default async function CourseDetailPage({ params }: PageProps) {
           <h1 className="text-5xl font-black">{course.title}</h1>
           <p className="mt-2 text-slate-500">{course.slug}</p>
           <div className="mt-4 flex flex-wrap gap-3 text-sm">
-            <span className="rounded-full bg-slate-100 px-3 py-2">{chapterData.length} chuong</span>
+            <span className="rounded-full bg-slate-100 px-3 py-2">{structureStats.folderCount} folder</span>
+            <span className="rounded-full bg-slate-100 px-3 py-2">{chapterData.length} chuong cu</span>
             <span className="rounded-full bg-slate-100 px-3 py-2">{totalLessons} bai hoc</span>
             <span className="rounded-full bg-slate-100 px-3 py-2">{totalSections} tiet hoc</span>
           </div>
@@ -75,6 +85,15 @@ export default async function CourseDetailPage({ params }: PageProps) {
           <Plus size={18} />
           Them chuong
         </Link>
+      </div>
+
+      <div className="mb-8">
+        <CourseStructureEditor
+          courseId={id}
+          initialStructure={courseStructure}
+          lessons={allLessons}
+          exams={(exams || []) as ExamRecord[]}
+        />
       </div>
 
       <div className="space-y-6">

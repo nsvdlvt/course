@@ -7,9 +7,10 @@ import {
 } from "lucide-react";
 
 import DocumentDeleteButton from "@/components/admin/DocumentDeleteButton";
-import { supabase } from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 export default async function DocumentsPage() {
+  const supabase = await createSupabaseServerClient();
   const { data: documents } = await supabase
     .from("documents")
     .select("*")

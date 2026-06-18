@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Edit3, FileText, Plus } from "lucide-react";
 
-import { supabase } from "@/lib/supabase";
+import { createSupabaseServerClient } from "@/lib/supabase-server";
 
 type ExamItem = {
   id: string;
@@ -14,6 +14,7 @@ type ExamItem = {
 };
 
 export default async function AdminExamsPage() {
+  const supabase = await createSupabaseServerClient();
   const { data: exams } = await supabase
     .from("exams")
     .select("id,title,slug,duration_minutes,question_count,exam_type,lesson_id")
