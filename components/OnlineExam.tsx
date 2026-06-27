@@ -344,7 +344,7 @@ export default function OnlineExam({
             <div className="grid gap-4 md:grid-cols-4">
               <div className="rounded-2xl bg-slate-50 p-4">
                 <div className="text-sm font-semibold text-slate-500">Loại câu hỏi</div>
-                <div className="mt-2 text-xl font-bold">Trắc nghiệm A/B/C/D</div>
+                <div className="mt-2 text-xl font-bold">Trắc nghiệm </div>
               </div>
               <div className="rounded-2xl bg-slate-50 p-4">
                 <div className="text-sm font-semibold text-slate-500">Số lượng câu</div>
