@@ -17,8 +17,6 @@ type ExamItem = {
   duration_minutes: number | null;
   question_count: number | null;
   answers: Record<string, string> | null;
-  exam_type?: string | null;
-  lesson_id?: string | null;
 };
 
 export default async function ExamRoomPage({ params }: ExamRoomPageProps) {
@@ -26,7 +24,7 @@ export default async function ExamRoomPage({ params }: ExamRoomPageProps) {
 
   const { data: exam } = await supabase
     .from("exams")
-    .select("id,title,slug,file_url,duration_minutes,question_count,answers,exam_type,lesson_id")
+    .select("id,title,slug,file_url,duration_minutes,question_count,answers")
     .eq("slug", slug)
     .single();
 
@@ -35,9 +33,7 @@ export default async function ExamRoomPage({ params }: ExamRoomPageProps) {
   }
 
   const item = exam as ExamItem;
-  const isFreeExam = item.exam_type === "free" || !item.lesson_id;
-
-  if (!isFreeExam || !item.file_url) {
+  if (!item.file_url) {
     notFound();
   }
 
