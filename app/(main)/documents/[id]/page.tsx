@@ -180,7 +180,7 @@ export default async function DocumentDetailPage({ params }: PageProps) {
   return (
     <main className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-fuchsia-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <BackButton />
+        <BackButton href="/documents" />
 
         <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">

@@ -48,7 +48,7 @@ export default function NotFound() {
             Về trang chủ
           </Link>
 
-          <BackButton />
+          <BackButton href="/home" />
         </div>
       </div>
     </main>

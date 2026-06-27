@@ -7,7 +7,7 @@ import { FileText, FolderTree, PlayCircle } from "lucide-react";
 
 import BackButton from "@/components/BackButton";
 import ChapterAccordion from "@/components/ChapterAccordion";
-import { getCourseStructure, countStructureStats, type CourseStructureNode } from "@/lib/course-structure";
+import { countStructureStats, getCourseStructure, type CourseStructureNode } from "@/lib/course-structure";
 import { supabase } from "@/lib/supabase";
 
 interface PageProps {
@@ -56,7 +56,8 @@ function StructureTree({
             key={node.id}
             title={node.title}
             subtitle={`${(node.children || []).length} mục con`}
-            defaultOpen={depth === 0}
+            defaultOpen={false}
+            variant={depth === 0 ? "root" : "nested"}
           >
             {(node.children || []).length > 0 ? (
               <StructureTree nodes={node.children || []} courseSlug={courseSlug} depth={depth + 1} />
@@ -76,15 +77,22 @@ function StructureTree({
                   ? `/exam/${node.examSlug}`
                   : "#"
             }
-            className="flex items-center justify-between rounded-3xl border border-slate-200 bg-white px-6 py-4 transition-colors duration-200 hover:bg-slate-50"
+            className={[
+              "flex items-center justify-between rounded-3xl border px-6 py-4 transition-colors duration-200",
+              depth > 0
+                ? "border-cyan-100 bg-white hover:bg-cyan-50/60"
+                : "border-slate-200 bg-white hover:bg-slate-50",
+            ].join(" ")}
           >
             <div className="flex items-center gap-3">
               {node.type === "lesson" ? (
-                <PlayCircle size={20} className="text-blue-600" />
+                <PlayCircle size={20} className={depth > 0 ? "text-cyan-600" : "text-blue-600"} />
               ) : (
-                <FileText size={20} className="text-emerald-600" />
+                <FileText size={20} className={depth > 0 ? "text-teal-600" : "text-emerald-600"} />
               )}
-              <span className="font-medium text-slate-800">{node.title}</span>
+              <span className={depth > 0 ? "text-[15px] font-medium text-slate-700" : "font-medium text-slate-800"}>
+                {node.title}
+              </span>
             </div>
           </Link>
         )
@@ -157,10 +165,12 @@ export default function CoursePage({ params }: PageProps) {
           throw chaptersError;
         }
 
+        const chapterIds = (chapters || []).map((chapter) => chapter.id);
+
         const { data: lessons, error: lessonsError } = await supabase
           .from("lessons")
           .select("*")
-          .in("chapter_id", (chapters || []).map((chapter) => chapter.id));
+          .in("chapter_id", chapterIds);
 
         if (lessonsError) {
           throw lessonsError;
@@ -231,7 +241,7 @@ export default function CoursePage({ params }: PageProps) {
     <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-cyan-50">
       <div className="mx-auto max-w-7xl px-6 py-10">
         <div className="mb-10">
-          <BackButton />
+          <BackButton href="/course" />
 
           <div className="mt-6 flex items-center gap-5">
             <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-slate-200">
